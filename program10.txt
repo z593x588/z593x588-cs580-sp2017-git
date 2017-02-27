@@ -1,0 +1,277 @@
+// Attempted both of the extra credit options.
+// File Name: program10.cpp
+// Author: Nathaniel Hess
+// Student ID: z593x588
+// Assignment Number: 10
+// Description: will access supplier data for a business. It will read the data from a file, save each supplier record in a structure, and use an array of structures to store all the records. Then depending on the user's choice, will either print or generate a file for the mailing list of what they search by.
+// Last Changed: April 26, 2015
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <cstdlib>
+#include <string.h>
+using namespace std;
+
+struct Supplier // Default supplier structure that I will put each supplier data into 
+{
+	string last_name; // Supplier info
+	string first_name;
+	string street_addr;
+	string city;
+	string state;
+	string zipcode;
+	char status;
+};
+
+void rtrim(string &s) // Function to remove the spaces at the end of strings. Will send each piece of supplier info into this function other than state and zipcode.
+{
+	s.erase(s.find_last_not_of(" \n\r\t") + 1);
+}
+
+Supplier make_supplier_record(string temp) // Function that recieves one line from the input file and uses string functions to seperate the whole line into smaller strings
+{
+	string last_name = temp.substr(0,15); // Last name string is set equal to the first 15 characters of the line we set into the function
+	string first_name = temp.substr(15,15); // First name string is set eual to 
+	string street_addr = temp.substr(30,30); // Street address string
+	string city = temp.substr(60,20); // City string
+	string state = temp.substr(80,2); // State string
+	string zipcode = temp.substr(82,5); // Zipcode string
+	string status = temp.substr(87,1); // Status string
+	char letter = status.at(0); // Converts the status string into a character so that it will fit into the default Supplier struct form
+	rtrim(last_name); // Send into rtrim function to remove the white space
+	rtrim(first_name);// Send into rtrim function to remove the white space
+	rtrim(street_addr);// Send into rtrim function to remove the white space
+	rtrim(city);// Send into rtrim function to remove the white space
+	
+	Supplier s; // Creates a new supplier "s" that has the default structure of Supplier
+	s.last_name = last_name; // Updates the last name of s 
+	s.first_name = first_name; // Updates the first name of s
+	s.street_addr = street_addr; // Updates the street address of s
+	s.city = city; // Updates the city of s
+	s.state = state; // Updates the state of s
+	s.zipcode = zipcode; // Updates the zipcode of s
+	s.status = letter; // updates the status of s
+	
+	//this function is called upon for every line length > 0 of the input file
+	
+	return s; // this function returns the structure s
+}
+
+void search_status(Supplier supplier_list[50], char status, int num_records, int filter) // This function recieves the entire array of suppliers, the status the user wants to search by, the actual number of records, and a filter that will either print the mailing list or generate an output file. This function will search through the array and find matching suppliers that have the desired status for the user.
+{
+	int count = 0;
+	if(filter == 1) // This if statement will run if the user wants to simply print a mailing list on the screen and does not want an output file
+	{
+		for(int i = 0; i < num_records; i++) //For loop that is used to run through the supplier array
+		{
+			if (supplier_list[i].status == status) //This if statement will run if the supplier matches the search status. It will then print out the matching supplier info
+			{
+				cout << supplier_list[i].first_name << " " << supplier_list[i].last_name << ", " << supplier_list[i].street_addr << ", " << supplier_list[i].city << " " << supplier_list[i].state << " " << supplier_list[i].zipcode << endl;	
+				count++;
+			}
+		}
+		cout << endl << "There were " << count << " matches for your search in our supplier records.\n";
+	}
+	if (filter == 2) //This if statement will run if the user wants to generate an output file and does not want to print the mailing list on the screen
+	{
+		ofstream myfile; //Names a file myfile
+		myfile.open ("mail.list"); //Opens a file with the name "mail.list"
+		if (myfile.fail()) //If the file doesn't open, the program will print out a message and then exit the program
+		{
+			cout << "Could not open file.\n";
+			exit(EXIT_FAILURE);
+		} else { //If the file opens,
+			for(int i = 0; i < num_records; i++) //this for loop will run through the whole supplier array
+			{
+				if (supplier_list[i].status == status) // looking for suppliers that match the desired status
+				{	
+					myfile << supplier_list[i].first_name << " " << supplier_list[i].last_name << ", " << supplier_list[i].street_addr << ", " << supplier_list[i].city << " " << supplier_list[i].state << " " << supplier_list[i].zipcode << endl; //sends the matching suppliers into an output file
+					count++;
+				}
+			}
+			cout  << "There were " << count << " matches for your search in our supplier records.\n";
+			myfile.close(); // closes said file
+		}
+	}
+}
+
+void search_zipcode(Supplier supplier_list[50], string zipcode, int num_records, int filter)// This function recieves the entire array of suppliers, the zipcode the user wants to search by, the actual number of records, and a filter that will either print the mailing list or generate an output file. This function will search through the array and find matching suppliers that have the desired zipcode for the user.
+{
+	int count = 0;
+	if (filter == 1) // This if statement will run if the user wants to simply print a mailing list on the screen and does not want an output file
+	{
+		for(int i = 0; i < num_records; i++)//For loop running through the array
+		{
+			if (zipcode.compare(supplier_list[i].zipcode) == 0) //compares the two strings using the string compare function. If they match, the program will print said user on the screen
+			{	
+				cout << supplier_list[i].first_name << " " << supplier_list[i].last_name << ", " << supplier_list[i].street_addr << ", " << supplier_list[i].city << " " << supplier_list[i].state << " " << supplier_list[i].zipcode << endl;	
+				count++;
+			}
+		}
+		if (count > 0)
+		{
+			cout << endl << "There were " << count << " matches for your search in the supplier records.\n";
+		}
+		
+		if(count == 0)
+		{
+			cout << "The zipcode that you entered resulted in zero matches in the supplier records.\n\n";
+		}
+	}
+	if (filter == 2)//This if statement will run if the user wants to generate an output file and does not want to print the mailing list on the screen
+	{
+		ofstream myfile; //Creates a file 
+		myfile.open ("mail.list");//Opens a file called "mail.list"
+		if (myfile.fail())// If the file doesn't open, the program will say it didn't and then exit the program
+		{
+			cout << "Could not open file.\n";
+			exit(EXIT_FAILURE);
+		} else { //if it does open,
+			for(int i = 0; i < num_records; i++)//the for loop will run through the whole array
+			{
+				if (zipcode == supplier_list[i].zipcode) //looking for suppliers that have the desired zipcode and will send them into the output file
+				{	
+					myfile << supplier_list[i].first_name << " " << supplier_list[i].last_name << ", " << supplier_list[i].street_addr << ", " << supplier_list[i].city << " " << supplier_list[i].state << " " << supplier_list[i].zipcode << endl;
+					count++;
+				}
+			}
+			myfile.close(); //closes the file
+			if (count > 0)
+			{
+				cout << "There were " << count << " matches for your search in the supplier records.\n\n";
+			}
+			if(count == 0)
+			{
+				cout << "The zipcode that you entered resulted in zero matches in the supplier records.\n\n";
+			}
+		}
+	}
+	
+}
+
+double get_number(string prompt)
+{
+	char str[20];// original user input as a string
+	double num;// number converted from user input
+	bool valid_number = true; //initializes valid_number to be true
+	char *end_ptr; //end pointer of the string
+	do {
+		if (!valid_number)//runs if valid_number is false
+		{
+			cout << "\nThis program requires that you enter a number.\n\n";
+		}
+		cout << prompt;
+		cin >> str; //grabs user input
+		num = strtod(str, &end_ptr); //sends into function to get the converted num and the end pointer
+		if (end_ptr != (str + strlen(str)))//if the end pointer is not = to the end of the string then it is false
+		{
+			valid_number = false;
+		}
+		else{ //if it is, it's true
+			valid_number = true;
+		}
+	} while (!valid_number); //runs for any invalid input
+	return num; //returns converted number
+}
+
+int main(void) //main function of the program
+{
+	Supplier supplier_list[50]; //creates an array of type Supplier with a max of 50 elements
+	int filter = 0; //Filter is varaible for the user's choice at the menu for if they want to generate an output file or print it on screen
+	int count = 0; //Count is a simple counter that counts the actual number of records from the file
+	string line, zipcode; //creates string variables line and zipcode. Line is the string that we pull from the output file that we will send into the make_supplier_record function
+	ifstream supplier; //creates an input file
+	supplier.open("supplier.data"); //opens the input file named "supplier.data"
+	if (supplier.fail()) //if the file doesn't open, the program will say so and then shut down
+	{
+		cout << "Could not open file." << endl;
+		exit(EXIT_FAILURE);
+	}
+	else //if it does open,
+	{
+		while (!supplier.eof()) //This while loop will run for any point that is not the end of the input file
+		{
+			getline(supplier, line); //This grabs the whole line of from the input file and save it as line
+			if (line.length() > 0) //For any line that has a length > 0, this if statement will run
+			{
+				supplier_list[count] = make_supplier_record(line); //this will send the saved line into the make_supplier_record function and recieves the returned Supplier structure and saves it into a supplier_list array
+				count++; //counts the actual number of records
+			}
+		}
+		supplier.close(); //closes file
+	}
+	while (filter != 3) //this while loop will run as long as filter does not equal 3. (exit)
+	{
+		char choice = 'a', prompt = 'a';//initializes two character variables called choice and prompt. Choice will be used for the which status that the user wants to search by and Prompt will be used as the variable for if the user wants to search by zipcode or status.
+		while (filter != 1 && filter != 2 && filter != 3) //This while loop will run if filter does not have a valid input
+		{
+			filter = get_number("Available choices:\n	1. Display mailing list on screen\n	2. Write mailing list to file\n	3. Quit\nEnter the number of your choice: "); //provides the options for user
+			
+			if( filter != 1 && filter != 2 && filter != 3) //if the user input is not valid, this will run and tell them it was invalid
+			{
+				cout << "\nInvalid input. Please try again. Valid inputs are 1, 2 or 3.\n\n";
+			}
+			if (filter == 3) //if the user inputs 3, the program will exit
+			{
+				cout << "\nThe program will now exit. Have a good day.\n\n";
+				return 0;
+			}
+		}
+		while (prompt != 'z' && prompt != 'Z' && prompt != 's' && prompt != 'S') //This while loop will run for as long as prompt has an invalid input
+		{
+			cout << endl << "A supplier mailing list will be generated based on supplier zipcode or supplier status.\n\n";
+			cout << "Enter your choice of Z for zip code, or S for status: "; //provides user with choice
+			cin >> prompt; //recieves user input
+			cout << endl;
+			if(prompt != 'z' && prompt != 'Z' && prompt != 's' && prompt != 'S') //if the user input is invalid, this will run and tell them to try again
+			{
+				cout  << "Invalid input. Please try again. Valid inputs are z, Z, s, S" << endl;
+			}
+		}
+		if (prompt == 'z' || prompt == 'Z') //if the user decides to search by zipcode, this statement will run
+		{
+			cout << "A supplier mailing list will be generated based on supplier zipcode.\n";
+			cout << "Enter the zipcode for which to generate a mailing list: "; //prompts for desired zipcode
+			cin >> zipcode;//recieves user input and saves it in zipcode
+			cout << endl;
+			if (filter == 2) //if the user wants to generate an output file, this statement will run
+			{
+				cout << "Mailing list matching your selection was generated and saved in the file mail.list.\n" << endl; //this just prompts them that an output file was generated
+			}
+			search_zipcode(supplier_list, zipcode, count, filter); //this calls upon the search_zipcode function and sends in the whole supplier_list array, the zipcode they want to search by, the actual number of records, and the filter of if they want to generate an output file for the mailing list or print it.
+		}
+		if (prompt == 's' || prompt == 'S') //if the user decides to search by status, this statement will run
+		{
+			while (choice != 'N' && choice != 'n' && choice != 'I' && choice != 'i' && choice != 'R' && choice != 'r' && choice != 'B' && choice != 'b')//this loop will run for as long as choice has an invalid input
+			{
+				cout << "A supplier mailing list will be generated based on supplier status.\n";
+				cout << "Supplier status:\n" << "	N - new supplier\n" << "	I - infrequent supplier\n" << "	R - regular supplier\n" << "	B - bulk supplier\n" << "Enter the supplier status for which to generate a mailing list: "; //prompts the user with available choices
+				cin >> choice; //recieves user input
+				cout << endl;
+				if (filter == 2)//if the user wants to generate an ouput file, this will run
+				{
+					cout << "Mailing list matching your selection was generated and saved in the file mail.list.\n" << endl; //tells user an output file was generated
+				}
+				if (choice != 'N' && choice != 'n' && choice != 'I' && choice != 'i' && choice != 'R' && choice != 'r' && choice != 'B' && choice != 'b') //if the user input is invalid, it will them so
+				{
+					cout << "Invalid input. Please try again. Valid inputs are N, n, I, i, R, r, B, b.\n" << endl;
+				}
+			}
+			switch(choice) //this switch is used so that if the user inputs a lower case letter, it converts it into a capital letter so that it will match the status in the record
+			{
+				case 'n': choice = 'N';
+					  break;
+				case 'i': choice = 'I';
+					  break;
+				case 'r': choice = 'R';
+					  break;
+				case 'b': choice = 'B';
+					  break;
+			}	
+			search_status(supplier_list, choice, count, filter);//Calls upon the search_status funtion and sends in the whole supplier_list array, the status they want to search by, the actual number of records, and if the user wants to generate an output file or simply print it on screen
+		}
+		filter = 0; //resets the value of filter so that the function will run for as long as the user wants
+	}
+	return 0;					
+}
